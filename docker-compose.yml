@@ -1,0 +1,106 @@
+version: "3.9"
+
+# ============================================================
+# Book Detection API — Docker Compose
+# ============================================================
+#
+# Services:
+#   frontend — React SPA served by nginx (port 3000)
+#   api      — The FastAPI application (port 8000)
+#   db-seeder — Runs populate_db.py once to seed ChromaDB
+#               Activate with: docker-compose --profile seed up db-seeder
+#
+# Usage:
+#   # Build the image
+#   docker-compose build
+#
+#   # Seed the database (run once; data persists in 'chroma_data' volume)
+#   docker-compose --profile seed up db-seeder
+#
+#   # Start the API
+#   docker-compose up api
+#
+#   # Or start both at once (seeder runs first, then api)
+#   docker-compose --profile seed up
+#
+# Environment:
+#   Copy .env.example to .env and fill in your API keys before running.
+#   Docker Compose automatically reads .env from the project root.
+# ============================================================
+
+services:
+
+  # ── Main API service ───────────────────────────────────────
+  api:
+    build: .
+    container_name: book-detection-api
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+      - CHROMA_PERSIST_DIR=/app/data/chroma_db
+      - CHROMA_COLLECTION_NAME=${CHROMA_COLLECTION_NAME:-books}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+      - RAG_TOP_K=${RAG_TOP_K:-3}
+      - MAX_IMAGE_SIZE_MB=${MAX_IMAGE_SIZE_MB:-20}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-["*"]}
+      #- LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
+      #- LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
+      # host.docker.internal resolves to the host machine from inside the container.
+      # On Linux Docker (no Docker Desktop) this requires the extra_hosts entry below.
+      # Hardcoded (not ${VAR:-default}) so .env's localhost value doesn't take precedence.
+      #- LANGFUSE_HOST=http://host.docker.internal:3000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # Linux: maps host.docker.internal → host IP
+    volumes:
+      # Named volume — ChromaDB data persists between container restarts
+      - chroma_data:/app/data/chroma_db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s   # Allow time for sentence-transformer model to load
+
+  # ── Frontend (React SPA) ─────────────────────────────────
+  # nginx serves the built React app and proxies /api/ to the api service.
+  # Access at http://localhost:3000
+  frontend:
+    build: ./frontend
+    container_name: book-detection-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Database seeder service ───────────────────────────────
+  # Runs scripts/populate_db.py once to fetch books from Google Books API
+  # and store them in ChromaDB. Only runs when using --profile seed.
+  #
+  # After running, the chroma_data volume contains the book embeddings
+  # and is shared with the api service automatically.
+  db-seeder:
+    build: .
+    container_name: book-db-seeder
+    command: python scripts/populate_db.py
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_BOOKS_API_KEY=${GOOGLE_BOOKS_API_KEY}
+      - CHROMA_PERSIST_DIR=/app/data/chroma_db
+      - CHROMA_COLLECTION_NAME=${CHROMA_COLLECTION_NAME:-books}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+    volumes:
+      - chroma_data:/app/data/chroma_db
+    profiles:
+      - seed   # Only runs with: docker-compose --profile seed up db-seeder
+
+# ── Named volumes ──────────────────────────────────────────
+volumes:
+  chroma_data:
+    driver: local
+    # Data stored at: /var/lib/docker/volumes/bookdetectionnew_chroma_data/_data
+    # This volume survives 'docker-compose down' but is removed by 'docker-compose down -v'

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker exec book-detection-api python -c \":*)",
+      "Bash(docker stats book-detection-api --no-stream)",
+      "Bash(docker stop book-detection-api)",
+      "Bash(docker run -d --name book-detection-api-test --env-file .env --add-host host.docker.internal:host-gateway -p 8001:8000 -v bookdetectionnew_chroma_data:/app/data/chroma_db book-detection-api uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1)",
+      "Bash(docker start book-detection-api)",
+      "Bash(docker run -d --rm --name book-detect-1worker --env-file .env --add-host host.docker.internal:host-gateway -p 8001:8000 -v bookdetectionnew_chroma_data:/app/data/chroma_db bookdetectionnew-api uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1)",
+      "Bash(curl -s http://localhost:8001/health)",
+      "Bash(docker exec book-detect-1worker python -c \":*)",
+      "Bash(docker exec book-detect-1worker env)",
+      "Bash(docker stop book-detect-1worker)",
+      "Bash(docker restart book-detection-api)",
+      "Bash(DOCKER_API_VERSION=1.51 docker stop book-detection-api)",
+      "Bash(DOCKER_API_VERSION=1.51 docker start book-detection-api)",
+      "Bash(docker kill book-detection-api)",
+      "Bash(docker exec book-detection-api curl -s -o /dev/null -w \"%{http_code}\" http://host.docker.internal:3000)",
+      "Bash(npm install)"
+    ]
+  }
+}

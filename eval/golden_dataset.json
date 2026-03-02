@@ -1,0 +1,290 @@
+[
+  {
+    "id": "dune-frank-herbert",
+    "vision_extraction": {
+      "visible_title": "DUNE",
+      "visible_author": "Frank Herbert",
+      "visible_isbn": "9780441013593",
+      "other_text": "40th Anniversary Edition",
+      "cover_description": "Orange and gold desert landscape, large moon on horizon, silhouetted figure in robes"
+    },
+    "ground_truth": {
+      "title": "Dune",
+      "author": "Frank Herbert",
+      "isbn": "9780441013593",
+      "genre": "Science Fiction"
+    }
+  },
+  {
+    "id": "1984-george-orwell",
+    "vision_extraction": {
+      "visible_title": "Nineteen Eighty-Four",
+      "visible_author": "George Orwell",
+      "visible_isbn": "9780451524935",
+      "other_text": "A Novel",
+      "cover_description": "Dark dystopian cover, large eye motif, deep red and black colour scheme"
+    },
+    "ground_truth": {
+      "title": "1984",
+      "author": "George Orwell",
+      "isbn": "9780451524935",
+      "genre": "Fiction"
+    }
+  },
+  {
+    "id": "the-great-gatsby-fitzgerald",
+    "vision_extraction": {
+      "visible_title": "The Great Gatsby",
+      "visible_author": "F. Scott Fitzgerald",
+      "visible_isbn": null,
+      "other_text": "Scribner Classics",
+      "cover_description": "Art deco style, a pair of eyes above a carnival, gold and teal colour palette"
+    },
+    "ground_truth": {
+      "title": "The Great Gatsby",
+      "author": "F. Scott Fitzgerald",
+      "isbn": null,
+      "genre": "Fiction"
+    }
+  },
+  {
+    "id": "sapiens-yuval-harari",
+    "vision_extraction": {
+      "visible_title": "Sapiens",
+      "visible_author": "Yuval Noah Harari",
+      "visible_isbn": "9780062316097",
+      "other_text": "A Brief History of Humankind",
+      "cover_description": "Cave painting hands on earthy brown background, minimal design"
+    },
+    "ground_truth": {
+      "title": "Sapiens: A Brief History of Humankind",
+      "author": "Yuval Noah Harari",
+      "isbn": "9780062316097",
+      "genre": "History"
+    }
+  },
+  {
+    "id": "atomic-habits-james-clear",
+    "vision_extraction": {
+      "visible_title": "Atomic Habits",
+      "visible_author": "James Clear",
+      "visible_isbn": "9780735211292",
+      "other_text": "An Easy and Proven Way to Build Good Habits and Break Bad Ones",
+      "cover_description": "Clean white cover with stylised atom graphic, bold orange accent colour"
+    },
+    "ground_truth": {
+      "title": "Atomic Habits",
+      "author": "James Clear",
+      "isbn": "9780735211292",
+      "genre": "Self-Help"
+    }
+  },
+  {
+    "id": "gone-girl-gillian-flynn",
+    "vision_extraction": {
+      "visible_title": "Gone Girl",
+      "visible_author": "Gillian Flynn",
+      "visible_isbn": "9780307588364",
+      "other_text": "A Novel",
+      "cover_description": "Blue-tinted image of a woman reflected in water, atmospheric and eerie"
+    },
+    "ground_truth": {
+      "title": "Gone Girl",
+      "author": "Gillian Flynn",
+      "isbn": "9780307588364",
+      "genre": "Mystery"
+    }
+  },
+  {
+    "id": "educated-tara-westover",
+    "vision_extraction": {
+      "visible_title": "Educated",
+      "visible_author": "Tara Westover",
+      "visible_isbn": "9780399590504",
+      "other_text": "A Memoir",
+      "cover_description": "Young woman standing on a mountain ledge silhouetted against sky, earthy tones"
+    },
+    "ground_truth": {
+      "title": "Educated",
+      "author": "Tara Westover",
+      "isbn": "9780399590504",
+      "genre": "Biography"
+    }
+  },
+  {
+    "id": "way-of-kings-brandon-sanderson",
+    "vision_extraction": {
+      "visible_title": "The Way of Kings",
+      "visible_author": "Brandon Sanderson",
+      "visible_isbn": "9780765326355",
+      "other_text": "Book One of the Stormlight Archive",
+      "cover_description": "Epic fantasy scene, armoured figure on cliff edge, storm clouds and lightning"
+    },
+    "ground_truth": {
+      "title": "The Way of Kings",
+      "author": "Brandon Sanderson",
+      "isbn": "9780765326355",
+      "genre": "Fantasy"
+    }
+  },
+  {
+    "id": "python-crash-course-matthes",
+    "vision_extraction": {
+      "visible_title": "Python Crash Course",
+      "visible_author": "Eric Matthes",
+      "visible_isbn": "9781593279288",
+      "other_text": "A Hands-On, Project-Based Introduction to Programming, 2nd Edition",
+      "cover_description": "Green snake coiled on white background, no starch press branding, clean tech book style"
+    },
+    "ground_truth": {
+      "title": "Python Crash Course",
+      "author": "Eric Matthes",
+      "isbn": "9781593279288",
+      "genre": "Computers"
+    }
+  },
+  {
+    "id": "hands-on-machine-learning-geron",
+    "vision_extraction": {
+      "visible_title": "Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow",
+      "visible_author": "Aurélien Géron",
+      "visible_isbn": "9781492032649",
+      "other_text": "2nd Edition, O'Reilly",
+      "cover_description": "O'Reilly animal cover, illustrated nautical chart style, technical reference look"
+    },
+    "ground_truth": {
+      "title": "Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow",
+      "author": "Aurélien Géron",
+      "isbn": "9781492032649",
+      "genre": "Computers"
+    }
+  },
+  {
+    "id": "hunger-games-collins",
+    "vision_extraction": {
+      "visible_title": "The Hunger Games",
+      "visible_author": "Suzanne Collins",
+      "visible_isbn": "9780439023481",
+      "other_text": null,
+      "cover_description": "Dark background with gold mockingjay bird emblem, dystopian YA aesthetic"
+    },
+    "ground_truth": {
+      "title": "The Hunger Games",
+      "author": "Suzanne Collins",
+      "isbn": "9780439023481",
+      "genre": "Young Adult"
+    }
+  },
+  {
+    "id": "the-notebook-nicholas-sparks",
+    "vision_extraction": {
+      "visible_title": "The Notebook",
+      "visible_author": "Nicholas Sparks",
+      "visible_isbn": "9780446605236",
+      "other_text": null,
+      "cover_description": "Romantic cover with couple silhouette, soft sunset colours, lake reflection"
+    },
+    "ground_truth": {
+      "title": "The Notebook",
+      "author": "Nicholas Sparks",
+      "isbn": "9780446605236",
+      "genre": "Romance"
+    }
+  },
+  {
+    "id": "thinking-fast-slow-kahneman",
+    "vision_extraction": {
+      "visible_title": "Thinking, Fast and Slow",
+      "visible_author": "Daniel Kahneman",
+      "visible_isbn": "9780374533557",
+      "other_text": "Farrar Straus Giroux",
+      "cover_description": "Minimal text-focused cover, bold typography, white and black with accent colour"
+    },
+    "ground_truth": {
+      "title": "Thinking, Fast and Slow",
+      "author": "Daniel Kahneman",
+      "isbn": "9780374533557",
+      "genre": "Psychology"
+    }
+  },
+  {
+    "id": "project-hail-mary-andy-weir",
+    "vision_extraction": {
+      "visible_title": "Project Hail Mary",
+      "visible_author": "Andy Weir",
+      "visible_isbn": "9780593135204",
+      "other_text": null,
+      "cover_description": "Blue starfield background, lone astronaut floating in space, cinematic feel"
+    },
+    "ground_truth": {
+      "title": "Project Hail Mary",
+      "author": "Andy Weir",
+      "isbn": "9780593135204",
+      "genre": "Science Fiction"
+    }
+  },
+  {
+    "id": "brief-history-time-hawking",
+    "vision_extraction": {
+      "visible_title": "A Brief History of Time",
+      "visible_author": "Stephen Hawking",
+      "visible_isbn": "9780553380163",
+      "other_text": "From the Big Bang to Black Holes",
+      "cover_description": "Dark space background with spiral galaxy, white typography, science popular book look"
+    },
+    "ground_truth": {
+      "title": "A Brief History of Time",
+      "author": "Stephen Hawking",
+      "isbn": "9780553380163",
+      "genre": "Science"
+    }
+  },
+  {
+    "id": "title-only-no-isbn",
+    "vision_extraction": {
+      "visible_title": "The Martian",
+      "visible_author": "Andy Weir",
+      "visible_isbn": null,
+      "other_text": "A Novel",
+      "cover_description": "Red Mars surface, astronaut helmet reflection, bold title typography"
+    },
+    "ground_truth": {
+      "title": "The Martian",
+      "author": "Andy Weir",
+      "isbn": "9780553418026",
+      "genre": "Science Fiction"
+    }
+  },
+  {
+    "id": "partial-title-author-only",
+    "vision_extraction": {
+      "visible_title": "Harry Potter",
+      "visible_author": null,
+      "visible_isbn": null,
+      "other_text": "Sorcerer's Stone",
+      "cover_description": "Illustrated boy on broomstick, castle in background, warm amber tones, children's fantasy"
+    },
+    "ground_truth": {
+      "title": "Harry Potter and the Sorcerer's Stone",
+      "author": "J.K. Rowling",
+      "isbn": "9780590353427",
+      "genre": "Fantasy"
+    }
+  },
+  {
+    "id": "spine-only-minimal-info",
+    "vision_extraction": {
+      "visible_title": "To Kill a Mockingbird",
+      "visible_author": "Harper Lee",
+      "visible_isbn": null,
+      "other_text": null,
+      "cover_description": "Spine view only, white text on dark background, publisher name at bottom"
+    },
+    "ground_truth": {
+      "title": "To Kill a Mockingbird",
+      "author": "Harper Lee",
+      "isbn": "9780061935466",
+      "genre": "Fiction"
+    }
+  }
+]

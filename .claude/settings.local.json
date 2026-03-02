@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:langfuse.com)",
+      "Bash(docker exec book-detection-api python -c \"import langfuse; print\\(langfuse.__version__\\); lf = langfuse.get_client\\(\\); print\\(type\\(lf\\)\\); print\\([m for m in dir\\(lf\\) if ''current'' in m.lower\\(\\) or ''span'' in m.lower\\(\\) or ''trace'' in m.lower\\(\\)]\\)\")",
+      "Bash(docker ps -a --format \"table {{.Names}}\\\\t{{.Status}}\")",
+      "Bash(docker compose up -d api)",
+      "Bash(docker exec book-detection-api python -c \":*)",
+      "Bash(docker exec book-detection-api env)",
+      "Bash(curl -s -X POST http://localhost:8000/api/v1/detect-book -F \"file=@/c/Windows/Web/Wallpaper/Theme1/img1.jpg\" -w \"\\\\nHTTP %{http_code}\")",
+      "Bash(docker ps --format \"{{.Names}}\\\\t{{.Status}}\")"
+    ]
+  }
+}
