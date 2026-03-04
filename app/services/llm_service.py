@@ -37,8 +37,9 @@ Dependencies:
   - app.config.Settings (OPENAI_API_KEY, OPENAI_MODEL)
 """
 
-from langfuse import observe
-from langfuse.openai import OpenAI  # Drop-in: auto-traces prompts, responses, tokens
+#from langfuse import observe
+#from langfuse.openai import OpenAI  # Drop-in: auto-traces prompts, responses, tokens
+from openai import OpenAI
 
 from app.config import Settings
 from app.schemas.book import BookInfo, VisionExtraction
@@ -107,7 +108,7 @@ class LLMService:
         self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = settings.OPENAI_SYNTHESIS_MODEL
 
-    @observe(name="llm-synthesis")
+    #@observe(name="llm-synthesis")
     def generate_book_info(
         self,
         extraction: VisionExtraction,

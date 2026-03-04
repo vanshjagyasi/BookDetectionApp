@@ -28,8 +28,9 @@ Dependencies:
 
 import json
 
-from langfuse import observe
-from langfuse.openai import OpenAI  # Drop-in: auto-traces prompts, responses, tokens
+#from langfuse import observe
+#from langfuse.openai import OpenAI  # Drop-in: auto-traces prompts, responses, tokens
+from openai import OpenAI
 
 from app.config import Settings
 from app.schemas.book import VisionExtraction
@@ -82,7 +83,7 @@ class VisionService:
         self.model = settings.OPENAI_MODEL
         self.vision_detail = settings.VISION_DETAIL
 
-    @observe(name="vision-extraction")
+    #@observe(name="vision-extraction")
     def extract_book_text(self, image_b64: str, media_type: str) -> VisionExtraction:
         """
         Send a book cover image to GPT-4o and extract visible text fields.

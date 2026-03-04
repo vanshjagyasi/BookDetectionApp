@@ -39,7 +39,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from langfuse import get_client, observe
+#from langfuse import get_client, observe
 
 from app.db.vector_store import VectorStore
 from app.schemas.book import VisionExtraction
@@ -81,7 +81,7 @@ class RAGService:
         self.store = vector_store
         self.reranker = reranker
 
-    @observe(name="rag-retrieval")
+    #@observe(name="rag-retrieval")
     def retrieve(self, extraction: VisionExtraction) -> list[dict]:
         """
         Query ChromaDB and optionally re-rank results with a cross-encoder.
@@ -131,25 +131,25 @@ class RAGService:
         candidates = self.store.query(query_text, n_results=fetch_k)
 
         if not candidates:
-            get_client().update_current_span(
-                metadata={"candidates_fetched": 0, "query_length": len(query_text)}
-            )
+            #get_client().update_current_span(
+            #    metadata={"candidates_fetched": 0, "query_length": len(query_text)}
+            #)
             return []
 
         results = self._rerank(query_text, candidates)
 
         # Log retrieval metadata as a Langfuse span attribute so it appears
         # in the trace dashboard alongside latency and token counts.
-        top_similarity = round(1 - results[0]["distance"], 3) if results else 0.0
-        get_client().update_current_span(
-            metadata={
-                "candidates_fetched": len(candidates),
-                "candidates_returned": len(results),
-                "reranked": self.reranker is not None,
-                "top_similarity": top_similarity,
-                "query_length": len(query_text),
-            }
-        )
+        #top_similarity = round(1 - results[0]["distance"], 3) if results else 0.0
+        #get_client().update_current_span(
+        #    metadata={
+        #        "candidates_fetched": len(candidates),
+        #        "candidates_returned": len(results),
+        #        "reranked": self.reranker is not None,
+        #        "top_similarity": top_similarity,
+        #        "query_length": len(query_text),
+        #    }
+        #)
         return results
 
     def _rerank(self, query_text: str, results: list[dict]) -> list[dict]:
