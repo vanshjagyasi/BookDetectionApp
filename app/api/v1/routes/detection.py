@@ -162,12 +162,12 @@ async def detect_book(
     print(f"[DEBUG] stage 3 done — title={book_info.title!r} confidence={book_info.confidence_score}", flush=True)
 
     # --- Log trace output to Langfuse ---
-    print("[DEBUG] langfuse — updating trace...", flush=True)
-    get_client().update_current_trace(
-        output={"title": book_info.title, "confidence_score": book_info.confidence_score},
-        metadata={"filename": file.filename, "model": settings.OPENAI_MODEL},
-    )
-    print("[DEBUG] langfuse — trace updated", flush=True)
+    #print("[DEBUG] langfuse — updating trace...", flush=True)
+    #get_client().update_current_trace(
+    #    output={"title": book_info.title, "confidence_score": book_info.confidence_score},
+    #    metadata={"filename": file.filename, "model": settings.OPENAI_MODEL},
+    #)
+    #print("[DEBUG] langfuse — trace updated", flush=True)
 
     # --- Build response ---
     notes_parts = []
