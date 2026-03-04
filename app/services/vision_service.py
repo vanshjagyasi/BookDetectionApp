@@ -117,8 +117,7 @@ class VisionService:
                             "image_url": {
                                 # OpenAI accepts base64 images as data URIs
                                 "url": f"data:{media_type};base64,{image_b64}",
-                                # "high" detail: split image into 512px tiles for
-                                # better small-text OCR (ISBN numbers, fine print)
+                                # detail level from settings: "auto", "high", or "low"
                                 "detail": self.vision_detail,
                             },
                         },

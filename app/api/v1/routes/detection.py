@@ -36,7 +36,7 @@ from app.schemas.book import DetectionResponse
 from app.services.llm_service import LLMService
 from app.services.rag_service import RAGService
 from app.services.vision_service import VisionService
-from app.utils.image_utils import validate_and_encode_image
+from app.utils.image_utils import MAX_DIMENSION, validate_and_encode_image
 
 router = APIRouter(tags=["Book Detection"])
 
@@ -131,7 +131,9 @@ async def detect_book(
 
     # --- Process image: validate, resize, encode ---
     image_b64, media_type = validate_and_encode_image(raw_bytes, media_type)
-    print(f"[DEBUG] image encoded — {len(image_b64)} b64 chars, type={media_type}", flush=True)
+    # Estimate image size from base64 length (base64 is ~4/3 of original bytes)
+    image_size_kb = round(len(image_b64) * 3 / 4 / 1024)
+    print(f"[DEBUG] image encoded — {image_size_kb}KB, type={media_type}, max_dim={MAX_DIMENSION}px", flush=True)
 
     # --- Initialise services ---
     vision_svc = VisionService(settings)
@@ -142,20 +144,20 @@ async def detect_book(
     # asyncio.to_thread offloads sync/blocking calls to a thread pool so that
     # langfuse.openai's internal OTel instrumentation (which uses asyncio)
     # does not deadlock against the already-running uvicorn event loop.
-    print("[DEBUG] stage 1 — calling GPT-4o vision...", flush=True)
+    print(f"[DEBUG] stage 1 — vision extraction (model={settings.OPENAI_MODEL}, detail={settings.VISION_DETAIL})...", flush=True)
     extraction = await asyncio.to_thread(
         vision_svc.extract_book_text, image_b64, media_type
     )
     print(f"[DEBUG] stage 1 done — title={extraction.visible_title!r} author={extraction.visible_author!r}", flush=True)
 
     # --- Stage 2: RAG retrieval ---
-    print("[DEBUG] stage 2 — querying ChromaDB...", flush=True)
+    print(f"[DEBUG] stage 2 — RAG retrieval (fetch_k={settings.RAG_FETCH_K}, rerank={'on' if reranker else 'off'})...", flush=True)
     rag_results = await asyncio.to_thread(rag_svc.retrieve, extraction)
     rag_context = rag_svc.format_context(rag_results)
     print(f"[DEBUG] stage 2 done — {len(rag_results)} candidate(s)", flush=True)
 
     # --- Stage 3: LLM synthesis ---
-    print("[DEBUG] stage 3 — calling GPT-4o synthesis...", flush=True)
+    print(f"[DEBUG] stage 3 — LLM synthesis (model={settings.OPENAI_SYNTHESIS_MODEL})...", flush=True)
     book_info = await asyncio.to_thread(
         llm_svc.generate_book_info, extraction, rag_context
     )

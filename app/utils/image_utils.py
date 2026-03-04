@@ -30,7 +30,8 @@ from PIL import Image, UnidentifiedImageError
 from fastapi import HTTPException
 
 
-# OpenAI recommends images ≤ 2048px on the longest side for "high" detail.
+# Max image dimension before resizing. Lower values = smaller payload = faster uploads.
+# OpenAI's limit is 2048px for "high" detail, but 1024px is sufficient for "auto".
 MAX_DIMENSION = 1024
 
 
