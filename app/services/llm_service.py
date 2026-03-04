@@ -105,7 +105,7 @@ class LLMService:
             settings: Application settings providing OPENAI_API_KEY and OPENAI_MODEL.
         """
         self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
-        self.model = settings.OPENAI_MODEL
+        self.model = settings.OPENAI_SYNTHESIS_MODEL
 
     @observe(name="llm-synthesis")
     def generate_book_info(

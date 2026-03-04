@@ -31,7 +31,7 @@ from fastapi import HTTPException
 
 
 # OpenAI recommends images ≤ 2048px on the longest side for "high" detail.
-MAX_DIMENSION = 2048
+MAX_DIMENSION = 1024
 
 
 def validate_and_encode_image(raw_bytes: bytes, media_type: str) -> tuple[str, str]:
@@ -84,7 +84,7 @@ def validate_and_encode_image(raw_bytes: bytes, media_type: str) -> tuple[str, s
     fmt = _pil_format(media_type)
     save_kwargs = {"format": fmt}
     if fmt == "JPEG":
-        save_kwargs["quality"] = 92  # High quality to preserve text sharpness
+        save_kwargs["quality"] = 85  # Good quality, smaller payload for faster uploads
 
     img.save(buffer, **save_kwargs)
     processed_bytes = buffer.getvalue()

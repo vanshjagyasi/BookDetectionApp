@@ -44,7 +44,13 @@ class Settings(BaseSettings):
     """OpenAI API key. Required for both vision extraction and JSON generation."""
 
     OPENAI_MODEL: str = "gpt-4o"
-    """GPT model used for all AI calls. gpt-4o supports vision + structured outputs."""
+    """GPT model used for vision extraction. gpt-4o supports vision + structured outputs."""
+
+    OPENAI_SYNTHESIS_MODEL: str = "gpt-4o-mini"
+    """GPT model used for Stage 3 synthesis. gpt-4o-mini is faster and cheaper for text-only tasks."""
+
+    VISION_DETAIL: str = "auto"
+    """OpenAI vision detail level: "high", "low", or "auto". "auto" lets the API choose based on image size."""
 
     # ------------------------------------------------------------------
     # Google Books API (only used by scripts/populate_db.py)

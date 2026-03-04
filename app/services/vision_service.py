@@ -80,6 +80,7 @@ class VisionService:
         """
         self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
         self.model = settings.OPENAI_MODEL
+        self.vision_detail = settings.VISION_DETAIL
 
     @observe(name="vision-extraction")
     def extract_book_text(self, image_b64: str, media_type: str) -> VisionExtraction:
@@ -117,7 +118,7 @@ class VisionService:
                                 "url": f"data:{media_type};base64,{image_b64}",
                                 # "high" detail: split image into 512px tiles for
                                 # better small-text OCR (ISBN numbers, fine print)
-                                "detail": "high",
+                                "detail": self.vision_detail,
                             },
                         },
                         {
