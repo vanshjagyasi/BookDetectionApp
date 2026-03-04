@@ -46,8 +46,8 @@ class Settings(BaseSettings):
     OPENAI_MODEL: str = "gpt-4o"
     """GPT model used for vision extraction. gpt-4o supports vision + structured outputs."""
 
-    OPENAI_SYNTHESIS_MODEL: str = "gpt-4o-mini"
-    """GPT model used for Stage 3 synthesis. gpt-4o-mini is faster and cheaper for text-only tasks."""
+    OPENAI_SYNTHESIS_MODEL: str = "gpt-4.1-nano"
+    """GPT model used for Stage 3 synthesis. gpt-4.1-nano is the fastest/cheapest model with structured output support."""
 
     VISION_DETAIL: str = "auto"
     """OpenAI vision detail level: "high", "low", or "auto". "auto" lets the API choose based on image size."""

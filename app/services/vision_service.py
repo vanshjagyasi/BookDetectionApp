@@ -128,7 +128,7 @@ class VisionService:
                     ],
                 },
             ],
-            max_tokens=1024,
+            max_tokens=300,
         )
 
         raw_text = response.choices[0].message.content or "{}"
