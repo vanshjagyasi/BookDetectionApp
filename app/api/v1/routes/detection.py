@@ -27,7 +27,7 @@ For full curl examples, see docs/API_REFERENCE.md.
 import asyncio
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from langfuse import get_client, observe
+#from langfuse import get_client, observe
 
 from app.config import Settings, get_settings
 from app.db.vector_store import VectorStore
@@ -70,7 +70,7 @@ SUPPORTED_MEDIA_TYPES: dict[str, str] = {
         500: {"description": "Internal error (AI API failure, etc.)."},
     },
 )
-@observe(name="detect-book")   # Parent Langfuse trace — all service spans become children
+#@observe(name="detect-book")   # Parent Langfuse trace — all service spans become children (disabled for debugging)
 async def detect_book(
     file: UploadFile = File(
         ...,
