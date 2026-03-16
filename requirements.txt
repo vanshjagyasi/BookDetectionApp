@@ -13,6 +13,10 @@ openai==1.54.0
 # Vector Database
 chromadb==0.5.15
 
+# PyTorch CPU-only (no CUDA — saves ~500MB RAM on CPU-only servers)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+
 # Embeddings
 sentence-transformers==3.1.1
 
