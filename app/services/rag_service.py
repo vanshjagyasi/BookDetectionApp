@@ -128,15 +128,16 @@ class RAGService:
             return []
 
         fetch_k = self.store.settings.RAG_FETCH_K
+        print(f"[DEBUG] RAG query_text={query_text!r}", flush=True)
+        print(f"[DEBUG] RAG db_count={self.store.count()}, fetch_k={fetch_k}", flush=True)
         candidates = self.store.query(query_text, n_results=fetch_k)
+        print(f"[DEBUG] RAG candidates={len(candidates)}", flush=True)
 
         if not candidates:
-            #get_client().update_current_span(
-            #    metadata={"candidates_fetched": 0, "query_length": len(query_text)}
-            #)
             return []
 
         results = self._rerank(query_text, candidates)
+        print(f"[DEBUG] RAG after rerank={len(results)}", flush=True)
 
         # Log retrieval metadata as a Langfuse span attribute so it appears
         # in the trace dashboard alongside latency and token counts.
