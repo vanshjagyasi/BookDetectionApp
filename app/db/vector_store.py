@@ -1,45 +1,39 @@
 """
 app/db/vector_store.py
 ======================
-ChromaDB vector store wrapper with integrated sentence-transformer embeddings.
+ChromaDB vector store wrapper with OpenAI embeddings.
 
 Responsibilities:
   - Initialise a persistent ChromaDB client at application startup (via lifespan).
-  - Load the sentence-transformer embedding model once (80MB, stays in memory).
+  - Call the OpenAI Embeddings API to convert text into vectors.
   - Expose upsert() for adding/updating book documents during DB population.
   - Expose query() for semantic nearest-neighbour search during inference.
 
 ChromaDB collection configuration:
-  - Distance metric: cosine  (correct for normalised sentence-transformer vectors)
-  - Embedding model: all-MiniLM-L6-v2  (384-dimensional vectors)
+  - Distance metric: cosine  (correct for normalised OpenAI embedding vectors)
+  - Embedding model: text-embedding-3-small  (1536-dimensional vectors)
   - Persistence: disk-backed via CHROMA_PERSIST_DIR (survives restarts)
 
 IMPORTANT — Architecture invariant:
   VectorStore is initialised ONCE inside app/main.py's lifespan() context manager
-  and stored in app.state.vector_store.  Never instantiate VectorStore per-request —
-  loading the 80MB embedding model on every call would cause unacceptable latency.
+  and stored in app.state.vector_store.  Never instantiate VectorStore per-request.
 
 Dependencies:
   - chromadb  (pip install chromadb)
-  - sentence-transformers  (pip install sentence-transformers)
+  - openai    (pip install openai)
   - app.config.Settings
-
-To swap the embedding model:
-  1. Change EMBEDDING_MODEL in .env.
-  2. Re-run scripts/populate_db.py to rebuild all embeddings with the new model.
-     Mixing embeddings from different models in the same collection is invalid.
 """
 
 import chromadb
 from chromadb.config import Settings as ChromaSettings
-from sentence_transformers import SentenceTransformer
+from openai import OpenAI
 
 from app.config import Settings
 
 
 class VectorStore:
     """
-    Manages the ChromaDB collection and sentence-transformer embedding model.
+    Manages the ChromaDB collection and OpenAI embedding API calls.
 
     Lifecycle:
         store = VectorStore(settings)
@@ -50,61 +44,57 @@ class VectorStore:
 
     def __init__(self, settings: Settings) -> None:
         """
-        Store settings reference. Does NOT load ChromaDB or the model yet —
+        Store settings reference. Does NOT load ChromaDB yet —
         that happens in initialize() so it can be called async-safely.
 
         Args:
             settings: Application settings (provides CHROMA_PERSIST_DIR,
-                      CHROMA_COLLECTION_NAME, EMBEDDING_MODEL).
+                      CHROMA_COLLECTION_NAME, EMBEDDING_MODEL, OPENAI_API_KEY).
         """
         self.settings = settings
         self.client: chromadb.PersistentClient | None = None
         self.collection: chromadb.Collection | None = None
-        self.embedding_model: SentenceTransformer | None = None
+        self.openai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
     async def initialize(self) -> None:
         """
-        Load ChromaDB and the sentence-transformer model into memory.
+        Load ChromaDB into memory.
 
         Must be called once before any query() or upsert() calls.
         Called automatically by app/main.py's lifespan context manager.
 
         Side effects:
             - Opens (or creates) the ChromaDB persistent directory.
-            - Downloads all-MiniLM-L6-v2 from HuggingFace on first run (~80MB).
-              Subsequent runs use the local cache (~/.cache/huggingface/).
         """
         self.client = chromadb.PersistentClient(
             path=self.settings.CHROMA_PERSIST_DIR,
             settings=ChromaSettings(anonymized_telemetry=False),
         )
 
-        # hnsw:space=cosine is the correct metric for sentence-transformer vectors
-        # which are L2-normalised by default. Using L2 distance on normalised
-        # vectors gives wrong similarity rankings.
+        # hnsw:space=cosine is the correct metric for OpenAI embedding vectors.
         self.collection = self.client.get_or_create_collection(
             name=self.settings.CHROMA_COLLECTION_NAME,
             metadata={"hnsw:space": "cosine"},
         )
 
-        self.embedding_model = SentenceTransformer(self.settings.EMBEDDING_MODEL)
-
     def embed(self, text: str) -> list[float]:
         """
-        Convert a text string into a 384-dimensional embedding vector.
+        Convert a text string into an embedding vector via OpenAI API.
 
         Args:
             text: Any UTF-8 string (title, synopsis, query string, etc.).
 
         Returns:
-            List of 384 floats representing the text in semantic space.
+            List of floats representing the text in semantic space.
 
         Raises:
-            RuntimeError: If initialize() has not been called yet.
+            openai.APIError: On API call failure or authentication error.
         """
-        if self.embedding_model is None:
-            raise RuntimeError("VectorStore.initialize() must be called before embed().")
-        return self.embedding_model.encode(text, normalize_embeddings=True).tolist()
+        response = self.openai_client.embeddings.create(
+            model=self.settings.EMBEDDING_MODEL,
+            input=text,
+        )
+        return response.data[0].embedding
 
     def upsert(self, book_id: str, document: str, metadata: dict) -> None:
         """
@@ -118,9 +108,6 @@ class VectorStore:
             document: Rich text string that will be embedded for similarity search.
                       Format: "{title} by {author}. {description}"
             metadata: Dict of book fields stored alongside the embedding.
-                      Keys: title, author, isbn, publisher, publication_year,
-                            genre, tags, synopsis, price, rating.
-                      Note: ChromaDB metadata values must be str, int, float, or bool.
 
         Raises:
             RuntimeError: If initialize() has not been called yet.
@@ -140,19 +127,11 @@ class VectorStore:
         Find the most semantically similar books to the query string.
 
         Args:
-            query_text: Natural language query built from VisionExtraction fields
-                        (e.g. "Dune by Frank Herbert desert planet science fiction").
-            n_results:  Number of candidates to return. Defaults to RAG_TOP_K
-                        from settings if not provided.
+            query_text: Natural language query built from VisionExtraction fields.
+            n_results:  Number of candidates to return. Defaults to RAG_TOP_K.
 
         Returns:
-            List of dicts, each containing:
-                {
-                    "document": str,       # the original embedded text
-                    "metadata": dict,      # all stored book fields
-                    "distance": float,     # cosine distance (0=identical, 2=opposite)
-                }
-            Sorted by distance ascending (most similar first).
+            List of dicts sorted by distance ascending (most similar first).
             Returns empty list if the collection is empty.
 
         Raises:

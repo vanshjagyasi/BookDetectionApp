@@ -13,8 +13,8 @@ It is safe to re-run — ChromaDB upsert is idempotent (deduplicates by book_id)
 
 Requirements:
     - GOOGLE_BOOKS_API_KEY must be set in .env
-    - OPENAI_API_KEY is NOT needed for this script
-    - ChromaDB and sentence-transformers must be installed
+    - OPENAI_API_KEY must be set in .env (used for embedding generation)
+    - ChromaDB and openai must be installed
 
 What it does:
     1. Issues 12 Google Books API searches across diverse genres.

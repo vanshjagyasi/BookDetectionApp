@@ -27,11 +27,10 @@ For full curl examples, see docs/API_REFERENCE.md.
 import asyncio
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-#from langfuse import get_client, observe
 
 from app.config import Settings, get_settings
 from app.db.vector_store import VectorStore
-from app.dependencies import get_reranker, get_vector_store
+from app.dependencies import get_vector_store
 from app.schemas.book import DetectionResponse
 from app.services.llm_service import LLMService
 from app.services.rag_service import RAGService
@@ -70,7 +69,6 @@ SUPPORTED_MEDIA_TYPES: dict[str, str] = {
         500: {"description": "Internal error (AI API failure, etc.)."},
     },
 )
-#@observe(name="detect-book")   # Parent Langfuse trace — all service spans become children (disabled for debugging)
 async def detect_book(
     file: UploadFile = File(
         ...,
@@ -78,7 +76,6 @@ async def detect_book(
     ),
     settings: Settings = Depends(get_settings),
     vector_store: VectorStore = Depends(get_vector_store),
-    reranker=Depends(get_reranker),
 ) -> DetectionResponse:
     """
     Identify a book from a cover image using the multimodal RAG pipeline.
@@ -87,14 +84,14 @@ async def detect_book(
       1. Validate file MIME type and size.
       2. Read and process image bytes (resize if needed, base64-encode).
       3. Vision extraction: GPT-4o reads the cover and returns VisionExtraction.
-      4. RAG retrieval: embed extraction text, query ChromaDB for top-k candidates.
-      5. LLM synthesis: GPT-4o cross-references image + RAG context → BookInfo.
+      4. RAG retrieval: embed extraction text via OpenAI, query ChromaDB for top-k.
+      5. LLM synthesis: GPT-4o cross-references extraction + RAG context → BookInfo.
       6. Return DetectionResponse with BookInfo and extraction notes.
 
     Args:
         file:         Uploaded image file (multipart/form-data).
         settings:     App config (injected via Depends).
-        vector_store: ChromaDB + embedding model (injected via Depends).
+        vector_store: ChromaDB + OpenAI embeddings (injected via Depends).
 
     Returns:
         DetectionResponse containing the identified BookInfo.
@@ -137,13 +134,10 @@ async def detect_book(
 
     # --- Initialise services ---
     vision_svc = VisionService(settings)
-    rag_svc = RAGService(vector_store, reranker)
+    rag_svc = RAGService(vector_store)
     llm_svc = LLMService(settings)
 
     # --- Stage 1: Vision extraction ---
-    # asyncio.to_thread offloads sync/blocking calls to a thread pool so that
-    # langfuse.openai's internal OTel instrumentation (which uses asyncio)
-    # does not deadlock against the already-running uvicorn event loop.
     print(f"[DEBUG] stage 1 — vision extraction (model={settings.OPENAI_MODEL}, detail={settings.VISION_DETAIL})...", flush=True)
     extraction = await asyncio.to_thread(
         vision_svc.extract_book_text, image_b64, media_type
@@ -151,7 +145,7 @@ async def detect_book(
     print(f"[DEBUG] stage 1 done — title={extraction.visible_title!r} author={extraction.visible_author!r}", flush=True)
 
     # --- Stage 2: RAG retrieval ---
-    print(f"[DEBUG] stage 2 — RAG retrieval (fetch_k={settings.RAG_FETCH_K}, rerank={'on' if reranker else 'off'})...", flush=True)
+    print(f"[DEBUG] stage 2 — RAG retrieval (top_k={settings.RAG_TOP_K}, embedding={settings.EMBEDDING_MODEL})...", flush=True)
     rag_results = await asyncio.to_thread(rag_svc.retrieve, extraction)
     rag_context = rag_svc.format_context(rag_results)
     print(f"[DEBUG] stage 2 done — {len(rag_results)} candidate(s)", flush=True)
@@ -163,22 +157,13 @@ async def detect_book(
     )
     print(f"[DEBUG] stage 3 done — title={book_info.title!r} confidence={book_info.confidence_score}", flush=True)
 
-    # --- Log trace output to Langfuse ---
-    #print("[DEBUG] langfuse — updating trace...", flush=True)
-    #get_client().update_current_trace(
-    #    output={"title": book_info.title, "confidence_score": book_info.confidence_score},
-    #    metadata={"filename": file.filename, "model": settings.OPENAI_MODEL},
-    #)
-    #print("[DEBUG] langfuse — trace updated", flush=True)
-
     # --- Build response ---
     notes_parts = []
     if extraction.visible_title:
         notes_parts.append(f"Vision read: '{extraction.visible_title}'")
     if extraction.visible_author:
         notes_parts.append(f"Author: '{extraction.visible_author}'")
-    rerank_note = f"re-ranked {settings.RAG_FETCH_K} → {len(rag_results)}" if reranker else f"matched {len(rag_results)}"
-    notes_parts.append(f"RAG {rerank_note} candidate(s)")
+    notes_parts.append(f"RAG matched {len(rag_results)} candidate(s)")
 
     return DetectionResponse(
         success=True,

@@ -7,31 +7,17 @@ python-multipart==0.0.9
 pydantic==2.8.2
 pydantic-settings==2.4.0
 
-# OpenAI — Vision + Structured Output
+# OpenAI — Vision + Structured Output + Embeddings
 openai==1.54.0
 
 # Vector Database
 chromadb==0.5.15
-
-# PyTorch CPU-only (no CUDA — saves ~500MB RAM on CPU-only servers)
---extra-index-url https://download.pytorch.org/whl/cpu
-torch
-
-# Embeddings
-sentence-transformers==3.1.1
 
 # Image Processing
 Pillow==10.4.0
 
 # HTTP Client (Google Books API ingestion script)
 requests==2.32.3
-
-# Observability
-langfuse>=3.0.0
-
-# RAG Evaluation
-#ragas>=0.1.0 # kinda problematic
-datasets>=2.0.0
 
 # Dev & Testing
 pytest==8.3.2

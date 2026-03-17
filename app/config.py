@@ -68,41 +68,18 @@ class Settings(BaseSettings):
     """Name of the ChromaDB collection that holds book documents + embeddings."""
 
     # ------------------------------------------------------------------
-    # Embedding model
+    # Embedding model (OpenAI API)
     # ------------------------------------------------------------------
-    EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
     """
-    sentence-transformers model for converting text into embedding vectors.
+    OpenAI embedding model for converting text into vectors.
+    text-embedding-3-small: 1536 dimensions, ~$0.02/M tokens.
     Must stay consistent — changing this after DB population invalidates
     all stored embeddings and requires re-running populate_db.py.
     """
 
-    RAG_TOP_K: int = 3
+    RAG_TOP_K: int = 5
     """Number of nearest-neighbour books to retrieve from ChromaDB per query."""
-
-    # ------------------------------------------------------------------
-    # Cross-encoder re-ranking
-    # ------------------------------------------------------------------
-    RERANKER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-    """
-    sentence-transformers CrossEncoder model for re-ranking RAG candidates.
-    Loaded once at startup (app.state.reranker). ~80MB, runs on CPU.
-    Set to "" to disable re-ranking entirely (falls back to bi-encoder order).
-    """
-
-    RAG_FETCH_K: int = 10
-    """
-    Number of candidates to fetch from ChromaDB before cross-encoder re-ranking.
-    Should be >= RERANK_TOP_K. Higher values improve recall at the cost of
-    slightly more CrossEncoder computation (10 pairs is still very fast).
-    """
-
-    RERANK_TOP_K: int = 3
-    """
-    Number of re-ranked candidates to pass to GPT-4o for final synthesis.
-    These are the top-RERANK_TOP_K results by cross-encoder score from the
-    RAG_FETCH_K candidates retrieved from ChromaDB.
-    """
 
     # ------------------------------------------------------------------
     # Langfuse LLM Observability

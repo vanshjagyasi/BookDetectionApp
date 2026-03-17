@@ -8,15 +8,14 @@ This is the entry point for the web server:
 
 Application startup (lifespan):
   1. Instantiate VectorStore with app settings.
-  2. Call vector_store.initialize() — loads ChromaDB from disk and downloads
-     the sentence-transformer model into memory (~80MB, done ONCE at startup).
+  2. Call vector_store.initialize() — connects to ChromaDB on disk.
   3. Store the initialised VectorStore on app.state so route handlers can
      access it via FastAPI's dependency injection (see app/dependencies.py).
 
 IMPORTANT — Architecture invariant:
-  The VectorStore (containing the embedding model + ChromaDB client) is
-  intentionally initialised exactly ONCE here. Never create a VectorStore
-  inside a route handler — loading an 80MB model per request is unacceptable.
+  The VectorStore (containing the ChromaDB client) is intentionally
+  initialised exactly ONCE here. Never create a VectorStore inside a
+  route handler.
 
 Registered routes:
   POST /api/v1/detect-book  →  app/api/v1/routes/detection.py
@@ -30,8 +29,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
-from sentence_transformers import CrossEncoder
 
 from app.api.v1.routes.detection import router as detection_router
 from app.config import get_settings
@@ -47,7 +44,7 @@ async def lifespan(app: FastAPI):
     Code after 'yield' runs on shutdown.
 
     Startup:
-      - Initialise VectorStore (loads ChromaDB + sentence-transformer model).
+      - Initialise VectorStore (connects to ChromaDB).
       - Store on app.state for dependency injection.
 
     Shutdown:
@@ -55,7 +52,7 @@ async def lifespan(app: FastAPI):
     """
     settings = get_settings()
 
-    # --- VectorStore (ChromaDB + bi-encoder embedding model) ---
+    # --- VectorStore (ChromaDB + OpenAI embeddings) ---
     vector_store = VectorStore(settings)
     await vector_store.initialize()
     app.state.vector_store = vector_store
@@ -67,18 +64,7 @@ async def lifespan(app: FastAPI):
             "Run: python scripts/populate_db.py\n"
         )
     else:
-        print(f"\n[OK] VectorStore ready — {book_count} books in ChromaDB.")
-
-    # --- Cross-encoder re-ranker ---
-    # Loaded once here (mirrors VectorStore pattern) — never instantiate per-request.
-    # Set RERANKER_MODEL="" in .env to disable re-ranking entirely.
-    if settings.RERANKER_MODEL:
-        reranker = CrossEncoder(settings.RERANKER_MODEL)
-        app.state.reranker = reranker
-        print(f"[OK] CrossEncoder loaded: {settings.RERANKER_MODEL}\n")
-    else:
-        app.state.reranker = None
-        print("[INFO] Re-ranking disabled (RERANKER_MODEL not set).\n")
+        print(f"\n[OK] VectorStore ready — {book_count} books in ChromaDB.\n")
 
     yield
     # Shutdown: nothing explicit needed; ChromaDB persists on disk automatically.
