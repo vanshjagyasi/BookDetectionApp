@@ -91,7 +91,7 @@ def fetch_books_for_query(query: str, api_key: str, max_results: int = 40) -> li
         "langRestrict": "en",
         "key": api_key,
     }
-    resp = requests.get(url, params=params, timeout=15)
+    resp = requests.get(url, params=params, timeout=60)
     resp.raise_for_status()
     return resp.json().get("items", [])
 
