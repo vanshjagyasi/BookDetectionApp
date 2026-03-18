@@ -49,19 +49,21 @@ LLM_SYSTEM_PROMPT = """You are an expert book identification system.
 
 You will receive:
 1. Text extracted from THE BOOK in the image by a vision model (title, author, ISBN, other text). NOTE: the original image may contain other objects besides the book — the vision model has already isolated the book-specific text for you.
-2. The top-3 most similar books retrieved from a book database
+2. Candidate books retrieved from a book database (may include multiple editions of the same book)
 
-Evidence priority — always prefer extracted text over visual inference:
-1. ISBN match (strongest signal — unique identifier)
-2. Title + author match (strong signal)
-3. Title or author alone (partial signal)
-4. Cover description / visual inference only (weakest — use as last resort)
+Candidate selection priority (follow this order strictly):
+1. ISBN match — if an ISBN is visible in the image AND a candidate has the same ISBN, use that candidate. This is the strongest signal.
+2. Title + author match — if multiple candidates match on title+author (e.g. different editions), use these tiebreakers in order:
+   a. Publisher match: prefer the candidate whose publisher appears in the image text (e.g. "Avery", "Random House")
+   b. Most complete metadata: prefer candidates with non-empty publisher, non-zero rating, and filled-in year
+3. Title only match — partial signal
+4. Cover description / visual inference only — weakest, use as last resort
 
 Your task:
-- Cross-reference the extracted text with the database candidates.
-- Select the best matching book, or synthesise information if no exact match exists.
-- Populate ALL available fields in the BookInfo schema.
-- For fields not visible in the image and not in the database, leave them null.
+- Cross-reference the extracted text with the database candidates using the priority above.
+- Select the single best matching candidate, or synthesise information if no exact match exists.
+- Populate ALL available fields in the BookInfo schema from the selected candidate.
+- For fields not visible in the image and not in the selected candidate, leave them null.
 
 Confidence score rules (be precise — this is used by downstream systems):
 - 0.95 or above: ISBN is visible in the image AND matches a database record exactly
@@ -75,7 +77,7 @@ Confidence score rules (be precise — this is used by downstream systems):
 
 ISBN population rules:
 - If ISBN is visible in the image, always use that value.
-- If ISBN is NOT visible but a database candidate matches (confidence ≥ 0.90), populate isbn from that database record — it is reliable enough to include.
+- If ISBN is NOT visible but you selected a candidate with confidence ≥ 0.90, populate isbn from that candidate's record.
 - Otherwise leave isbn null.
 
 Tags should be specific and useful (e.g. ["space opera", "dystopian", "coming-of-age"]).
